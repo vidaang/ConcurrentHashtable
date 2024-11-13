@@ -25,6 +25,7 @@ https://chatgpt.com/share/673398db-5d54-8000-9e37-1a7f959ba215
 - Makefile
 
 ## Running the program
-1. Ensure you have the necessary python libraries installed
-2. In the terminal enter `gcc -g chash.c -o chash.exe -lpthread` to compile the code
-3. After compilation run the command `./chash.exe`
+1. Ensure you have the necessary C libraries installed
+2. In the terminal enter `make` to compile the code
+3. After compilation run the command `make run` or `./chash_program`
+4. To recompile after any changes run `make clean` and run `make` again
