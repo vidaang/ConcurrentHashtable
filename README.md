@@ -17,7 +17,7 @@ AI assistance was provided for constructing the hashtable program.
 ### Link to Chat GPT Discussion:
 https://chatgpt.com/share/673398db-5d54-8000-9e37-1a7f959ba215
 
-### Files 
+## Files 
 - chash (main file)
 - hash_table (controls hash table functionality)
 - logger (prints logs output file)
