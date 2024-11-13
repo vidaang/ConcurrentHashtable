@@ -1,7 +1,7 @@
 # Concurrent Hashtable
 
 ## Description
-Created a concurrent hash table that allows multiple threads to perform operations on a shared collection of key-data pairs, without causing data corruption or inconsistency.
+This project implements a hash table with thread-safe operations using reader-writer locks. The program reads instructions from a file, creates multiple threads to handle operations concurrently, and produces output to the console.
 
 ## Team Members
 - Edward Weir
@@ -11,9 +11,18 @@ Created a concurrent hash table that allows multiple threads to perform operatio
 - Steven Huynh
 
 ## Chat GPT Usage
-The program was created by 80% of Chat GPT prompting. 20% of the remaining work was done to correct formatting errors to match the output file and breaking the file down so it does not become a monolithic file.
+Citation:
+AI assistance was provided for constructing the hashtable program. 
+
 ### Link to Chat GPT Discussion:
 https://chatgpt.com/share/673398db-5d54-8000-9e37-1a7f959ba215
+
+### Files 
+- chash (main file)
+- hash_table (controls hash table functionality)
+- logger (prints logs output file)
+- test_output (output file used to check correct output)
+- Makefile
 
 ## Running the program
 1. Ensure you have the necessary python libraries installed
