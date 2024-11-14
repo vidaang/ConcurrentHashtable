@@ -41,10 +41,6 @@ void *execute_process(void *arg) {
 int main() {
     pthread_rwlock_init(&table_rwlock, NULL);
     output_file = fopen("output.txt", "w");
-    if (output_file == NULL) {
-        fprintf(stderr, "Failed to open commands.txt\n");
-        return EXIT_FAILURE;
-    }
 
     FILE *command_file = fopen("commands.txt", "r");
     if (!command_file) {
@@ -60,7 +56,7 @@ int main() {
 
     pthread_t threads[num_threads];
 
-    log_timestamp("WAITING ON INSERTS");
+    // log_timestamp("WAITING ON INSERTS");
     for (int i = 0; i < num_threads; i++) {
         pthread_create(&threads[i], NULL, execute_process, command_file);
     }
@@ -70,8 +66,8 @@ int main() {
     }
 
     fprintf(output_file, "Finished all threads.\n");
-    fprintf(output_file, "Number of lock acquisitions: %d\n", lock_acquisitions);
-    fprintf(output_file, "Number of lock releases: %d\n", lock_releases);
+    fprintf(output_file, "Number of lock acquisitions:  %d\n", lock_acquisitions);
+    fprintf(output_file, "Number of lock releases:  %d\n", lock_releases);
     print();
 
     fclose(command_file);

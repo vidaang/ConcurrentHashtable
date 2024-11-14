@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
+#include <inttypes.h>
 #include "hash_table.h"
 #include "logger.h"
 
@@ -12,8 +13,8 @@ hashRecord *hash_table[TABLE_SIZE] = {NULL};
 
 pthread_rwlock_t table_rwlock = PTHREAD_RWLOCK_INITIALIZER;
 
-uint64_t jenkins_one_at_a_time_hash(const char *name) {
-    uint64_t hash = 0;
+uint32_t jenkins_one_at_a_time_hash(const char *name) {
+    uint32_t hash = 0;
     while (*name) {
         hash += *name++;
         hash += (hash << 10);
@@ -26,13 +27,14 @@ uint64_t jenkins_one_at_a_time_hash(const char *name) {
 }
 
 void insert(char *name, uint32_t value) {
-    uint32_t hash_value = jenkins_one_at_a_time_hash(name) % TABLE_SIZE;
-    
+    uint32_t hash_value = jenkins_one_at_a_time_hash(name);
+    uint32_t index = hash_value % TABLE_SIZE;    
+
     pthread_rwlock_wrlock(&table_rwlock);
     lock_acquisitions++;
     log_timestamp("WRITE LOCK ACQUIRED");
 
-    hashRecord *node = hash_table[hash_value];
+    hashRecord *node = hash_table[index];
     while (node != NULL) {
         if (strcmp(node->name, name) == 0) {
             node->salary = value;
@@ -49,8 +51,8 @@ void insert(char *name, uint32_t value) {
     new_node->hash = hash_value;
     strncpy(new_node->name, name, MAX_NAME_LENGTH - 1);
     new_node->salary = value;
-    new_node->next = hash_table[hash_value];
-    hash_table[hash_value] = new_node;
+    new_node->next = hash_table[index];
+    hash_table[index] = new_node;
 
     log_command("INSERT", hash_value, name, value);
     lock_releases++;
@@ -59,12 +61,14 @@ void insert(char *name, uint32_t value) {
 }
 
 void delete(char *name) {
-    uint32_t hash_value = jenkins_one_at_a_time_hash(name) % TABLE_SIZE;
+    uint32_t hash_value = jenkins_one_at_a_time_hash(name);
+    uint32_t index = hash_value % TABLE_SIZE;
+
     pthread_rwlock_wrlock(&table_rwlock);
     log_timestamp("WRITE LOCK ACQUIRED");
     lock_acquisitions++;
 
-    while(deleteSearch(name, hash_value)){
+    while(deleteSearch(name, index)){
         pthread_rwlock_unlock(&table_rwlock); 
         usleep(10000);
     }
@@ -76,17 +80,17 @@ void delete(char *name) {
     pthread_rwlock_unlock(&table_rwlock);
 }
 
-bool deleteSearch(char *name, uint32_t hash_value) {
+bool deleteSearch(char *name, uint32_t index) {
     pthread_rwlock_wrlock(&table_rwlock);
 
-    hashRecord *node = hash_table[hash_value];
+    hashRecord *node = hash_table[index];
     hashRecord *prev = NULL;
     while (node != NULL) {
         if (strcmp(node->name, name) == 0) {
             if (prev) {
                 prev->next = node->next;
             } else {
-                hash_table[hash_value] = node->next;
+                hash_table[index] = node->next;
             }
             free(node);
             return true;
@@ -103,13 +107,14 @@ bool deleteSearch(char *name, uint32_t hash_value) {
 }
 
 uint32_t search(char *name) {
-    uint32_t hash_value = jenkins_one_at_a_time_hash(name) % TABLE_SIZE;
+    uint32_t hash_value = jenkins_one_at_a_time_hash(name);
+    uint32_t index = hash_value % TABLE_SIZE;
 
     pthread_rwlock_rdlock(&table_rwlock);
     log_timestamp("WRITE LOCK ACQUIRED");
     lock_acquisitions++;
 
-    hashRecord *node = hash_table[hash_value];
+    hashRecord *node = hash_table[index];
     while (node != NULL) {
         if (strcmp(node->name, name) == 0) {
             uint32_t value = node->salary;
@@ -129,18 +134,39 @@ uint32_t search(char *name) {
     return 0;
 }
 
+int compare_hash(const void *a, const void *b) {
+    hashRecord *record_a = *(hashRecord **)a;
+    hashRecord *record_b = *(hashRecord **)b;
+
+    if (record_a->hash < record_b->hash) return -1;
+    if (record_a->hash > record_b->hash) return 1;
+    return 0;
+}
+
 void print() {
     pthread_rwlock_rdlock(&table_rwlock);
     lock_acquisitions++;
     log_timestamp("READ LOCK ACQUIRED");
 
+    hashRecord *all_records[TABLE_SIZE * 100]; // Assuming MAX_BUCKET_SIZE is the max records in a bucket
+    int record_count = 0;
+
+    // Collect records from all hash table buckets
     for (int i = 0; i < TABLE_SIZE; i++) {
         hashRecord *node = hash_table[i];
         while (node) {
-            fprintf(output_file, "%lu,%s,%u\n", node->hash, node->name, node->salary);
+            all_records[record_count++] = node;
             node = node->next;
         }
     }
+
+    qsort(all_records, record_count, sizeof(hashRecord *), compare_hash);
+
+    // Print the sorted records
+    for (int i = 0; i < record_count; i++) {
+        fprintf(output_file, "%u,%s,%u\n", all_records[i]->hash, all_records[i]->name, all_records[i]->salary);
+    }
+
     lock_releases++;
     log_timestamp("READ LOCK RELEASED");
     pthread_rwlock_unlock(&table_rwlock);

@@ -9,7 +9,7 @@
 #define TABLE_SIZE 100  
 
 typedef struct hash_struct {
-    uint64_t hash;
+    uint32_t hash;
     char name[MAX_NAME_LENGTH];
     uint32_t salary;
     struct hash_struct *next;
@@ -24,7 +24,7 @@ extern hashRecord *hash_table[TABLE_SIZE];
 // Declare the functions for hash table operations
 void insert(char *name, uint32_t value);
 void delete(char *name);
-bool deleteSearch(char *name, uint32_t hash_value);
+bool deleteSearch(char *name, uint32_t index);
 uint32_t search(char *name);
 void print();
 
