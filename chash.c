@@ -78,5 +78,5 @@ int main() {
     fclose(output_file);
     pthread_rwlock_destroy(&table_rwlock);
 
-    return ;
+    return 0;
 }

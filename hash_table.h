@@ -9,7 +9,7 @@
 #define TABLE_SIZE 100  
 
 typedef struct hash_struct {
-    uint32_t hash;
+    uint64_t hash;
     char name[MAX_NAME_LENGTH];
     uint32_t salary;
     struct hash_struct *next;

@@ -5,12 +5,6 @@
 #include "hash_table.h"
 #include "logger.h"
 
-// extern FILE *output_file;
-// pthread_rwlock_t table_rwlock = PTHREAD_RWLOCK_INITIALIZER;
-// extern int lock_acquisitions;
-// extern int lock_releases;
-// extern hashRecord *hash_table[TABLE_SIZE];
-
 FILE *output_file = NULL;
 int lock_acquisitions = 0;
 int lock_releases = 0;
@@ -18,8 +12,8 @@ hashRecord *hash_table[TABLE_SIZE] = {NULL};
 
 pthread_rwlock_t table_rwlock = PTHREAD_RWLOCK_INITIALIZER;
 
-uint32_t jenkins_one_at_a_time_hash(const char *name) {
-    uint32_t hash = 0;
+uint64_t jenkins_one_at_a_time_hash(const char *name) {
+    uint64_t hash = 0;
     while (*name) {
         hash += *name++;
         hash += (hash << 10);
@@ -143,7 +137,7 @@ void print() {
     for (int i = 0; i < TABLE_SIZE; i++) {
         hashRecord *node = hash_table[i];
         while (node) {
-            fprintf(output_file, "%u,%s,%u\n", node->hash, node->name, node->salary);
+            fprintf(output_file, "%lu,%s,%u\n", node->hash, node->name, node->salary);
             node = node->next;
         }
     }
