@@ -6,8 +6,8 @@ This project implements a hash table with thread-safe operations using reader-wr
 ## Team Members
 - Edward Weir
 - Vi Dang
-- Bao Huynh
-- Michael McCorvey
+- Bao Ha
+- Michael McGarvey
 - Steven Huynh
 
 ## Chat GPT Usage
